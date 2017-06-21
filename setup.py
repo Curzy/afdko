@@ -4,7 +4,7 @@ import os
 from setuptools.command.build_clib import build_clib
 from setuptools.command.install_lib import install_lib
 import subprocess
-
+from distutils.util import get_platform
 
 def getExecutableDir():
 	curSystem = platform.system()
@@ -16,10 +16,12 @@ def getExecutableDir():
 		binDir = "osx"
 	else:
 		raise KeyError("Do not recognize target OS: %s" % (sys.platform))
-	return binDir
+		
+	platform_name = get_platform()
+	return binDir, platform_name
 	
 def compile(pgkDir):
-	binDir = getExecutableDir()
+	binDir, platform_name = getExecutableDir()
 	programsDir = os.path.join(pgkDir, "Tools", "Programs")
 	if binDir == 'osx':
 		cmd = "sh BuildAll.sh"
@@ -57,7 +59,8 @@ classifiers = {"classifiers": [
 	"Topic :: Multimedia :: Graphics :: Graphics Conversion",
 ]}
 
-binDir = getExecutableDir()
+binDir, platform_name = getExecutableDir()
+print find_packages('FDK')
 
 setup(name="afdko",
 	  version="2.6.0.dev0",
@@ -66,15 +69,15 @@ setup(name="afdko",
 	  author='Read Roberts and many other Adobe engineers',
 	  author_email='readrob@pacbell.net',
 	  license='Apache License, Version 2.0',
-	  platforms=["Any"],
+	  platforms=[platform_name],
 	  package_dir={'': 'FDK'},
 	  packages=find_packages('FDK'),
 	  include_package_data = True,
 	  package_data = {
 		# If any package contains *.txt files, include them:
+		'SharedData': ['Adobe Cmaps/*'],
+		'SharedData': ['CID charsets/*'],
 		'Tools': ["%s/*" % (binDir)],
-		'Adobe\ Cmaps': ['Adobe-CNS1/*.txt'],
-		'SharedData': ['CID\ charsets/*'],
 	  },
 	  setup_requires=['wheel'],
 	  install_requires=[
@@ -85,7 +88,7 @@ setup(name="afdko",
 	  ],
 	  entry_points={
 		  'console_scripts': [
-			  "compareFamilyTest = FDK.Tools.SharedData.FDKScripts.CompareFamily:main",
+			  "compareFamilyTest = Tools.SharedData.FDKScripts.CompareFamily:main",
 			  "txFDK = Tools.%s:run_cmd" % (binDir),
 			  "spotFDK = Tools.%s:run_cmd" % (binDir),
 		  ],
